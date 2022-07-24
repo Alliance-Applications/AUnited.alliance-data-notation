@@ -5,6 +5,6 @@ repository = ""
 version = "0.0.1-alpha"
 authors = ["Raphael Mateus das Neves <NER.Alliance@gmail.com>"]
 edition = "2021"
-license = "Alliance Public"
+license = "LGPLv3"
 
 publish = false

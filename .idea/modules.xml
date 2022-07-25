@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module
-              fileurl="file://$PROJECT_DIR$/.idea/modules/AUnited.alliance-data-notation.iml"
-              filepath="$PROJECT_DIR$/.idea/modules/AUnited.alliance-data-notation.iml" />
-      <module
-              fileurl="file://$PROJECT_DIR$/.idea/modules/AUnited.alliance-data-notation.Native.iml"
-              filepath="$PROJECT_DIR$/.idea/modules/AUnited.alliance-data-notation.Native.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/AUnited.alliance-data-notation.iml" filepath="$PROJECT_DIR$/.idea/modules/AUnited.alliance-data-notation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/AUnited.alliance-data-notation.Native.iml" filepath="$PROJECT_DIR$/.idea/modules/AUnited.alliance-data-notation.Native.iml" />
     </modules>
   </component>
 </project>

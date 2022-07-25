@@ -11,17 +11,18 @@ anyone who wants to use it or contribute is welcome to do so.
 
 # Supported types:
 
-| name    | java type |
-|---------|-----------|
-| boolean | boolean   |
-| int8    | byte      |
-| int16   | short     |
-| int32   | int       |
-| int64   | long      |
-| fp32    | float     |
-| fp64    | double    |
-| string  | String    |
-| object  | Object    |
+| ADN type | JVM type     | .Net type    | Rust type  |
+|----------|--------------|--------------|------------|
+| bool     | boolean      | bool         | bool       |
+| i8       | byte         | byte         | i8         |
+| i16      | short        | short        | i16        |
+| i32      | int          | int          | i32        |
+| i64      | long         | long         | i64        |
+| f32      | float        | float        | f32        |
+| f64      | double       | double       | f64        |
+| str      | String       | string       | str        |
+| []       | ArrayList<T> | ArrayList<T> | HashSet<T> |
+| struct   | HashSet<T>   | HashSet<T>   | HashSet<T> |
 
 # Roadmap:
 - Modes: Simple (types: number, string, object), Expressive

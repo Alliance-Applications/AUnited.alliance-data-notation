@@ -1,6 +1,6 @@
-package main.java.io.alliance.adn.lexer;
+package io.alliance.adn.lexer;
 
-import main.java.io.alliance.adn.Walkable;
+import io.alliance.adn.Walkable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,4 +1,4 @@
-package main.java.io.alliance.adn.element;
+package io.alliance.adn.element;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,10 +18,5 @@ public final class ADNInt8 implements ADNElement {
     @Override
     public @NotNull ADNType getType() {
         return ADNType.INT8;
-    }
-
-    @Override
-    public String textify(StringBuilder builder, int indent) {
-        return builder.append(getIndent(indent)).append("int8 ").append(name).append(" = ").append(value).append(";\n").toString();
     }
 }

@@ -1,11 +1,8 @@
-package main.java.io.alliance.adn.element;
+package io.alliance.adn.element;
 
-import main.java.io.alliance.adn.exception.InvalidCastException;
-import main.java.io.alliance.adn.exception.InvalidKeyException;
-import main.java.io.alliance.adn.exception.ParsingException;
-import main.java.io.alliance.adn.lexer.Lexer;
-import main.java.io.alliance.adn.lexer.Token;
-import main.java.io.alliance.adn.parser.Parser;
+import io.alliance.adn.exception.InvalidCastException;
+import io.alliance.adn.exception.InvalidKeyException;
+import io.alliance.adn.util.Caster;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -13,11 +10,6 @@ import lombok.val;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,16 +19,8 @@ public class ADNObject extends HashMap<String, ADNElement> implements ADNElement
 
     @NotNull
     private final String name;
-
-    public static ADNObject parse(String input) throws ParsingException {
-        val tokens = new Lexer(input).lex();
-        return new Parser(tokens.toArray(new Token[0])).parse();
-    }
-
-    @Override
-    public @NotNull ADNType getType() {
-        return ADNType.OBJECT;
-    }
+    @Setter
+    private int indent;
 
     public ADNObject(@NotNull String name) {
         this.name = name;
@@ -45,327 +29,313 @@ public class ADNObject extends HashMap<String, ADNElement> implements ADNElement
     public ADNObject(@NotNull String name, @NotNull List<ADNElement> elementList) {
         this.name = name;
 
-        for(val element : elementList) {
+        for (val element : elementList) {
             put(element.getName(), element);
         }
     }
 
-    public ADNElement getElementByIdentifier(@NotNull String identifier) throws InvalidKeyException {
-        final ADNElement element = get(identifier);
+    @Override
+    @Nullable
+    public ADNElement put(@NotNull String key, @NotNull ADNElement value) {
+        return super.put(key, value);
+    }
 
-        if(element == null) {
-            throw new InvalidKeyException();
-        }
-
-        return element;
+    @Override
+    public @NotNull ADNType getType() {
+        return ADNType.OBJECT;
     }
 
     @Override
     public @Nullable Object getValue() {
         return null;
     }
+    public ADNElement getElementByIdentifier(@NotNull String identifier) throws InvalidKeyException {
+        final ADNElement element = get(identifier);
 
-    public boolean putBoolean(@NotNull String name, Boolean value) {
-        if(value == null) {
-            return (boolean)put(name, new ADNBoolean(name, false)).getValue();
-        }
-        return (boolean)put(name, new ADNBoolean(name, value)).getValue();
-    }
-
-    public byte putByte(@NotNull String name, Byte value) {
-        if(value == null) {
-            return putInt8(name, (byte) 0x00);
-        }
-        return putInt8(name, value);
-    }
-
-    public char putCharacter(@NotNull String name, Character value) {
-        if(value == null) {
-            return putInt16(name, (char) 0x00);
-        }
-        return putInt16(name, value);
-    }
-
-    public int putInteger(@NotNull String name, Integer value) {
-        if(value == null) {
-            return putInt32(name, 0);
-        }
-        return putInt32(name, value);
-    }
-
-    public long putLong(@NotNull String name, Long value) {
-        if(value == null) {
-            return putInt64(name, 0);
-        }
-        return putInt64(name, value);
-    }
-
-    public float putFloat(@NotNull String name, Float value) {
-        if(value == null) {
-            return putFP32(name, 0);
-        }
-        return putFP32(name, value);
-    }
-
-    public double putDouble(@NotNull String name, Double value) {
-        if(value == null) {
-            return putFP64(name, 0);
-        }
-        return putFP64(name, value);
-    }
-
-    public byte putInt8(@NotNull String name, byte value) {
-        val element = new ADNInt8(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public char putInt16(@NotNull String name, char value) {
-        val element = new ADNInt16(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public int putInt32(@NotNull String name, int value) {
-        val element = new ADNInt32(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public long putInt64(@NotNull String name, long value) {
-        val element = new ADNInt64(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public long putUInt8(@NotNull String name, long value) {
-        val element = new ADNUInt8(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public long putUInt16(@NotNull String name, long value) {
-        val element = new ADNUInt16(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public long putUInt32(@NotNull String name, long value) {
-        val element = new ADNUInt32(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public long putUInt64(@NotNull String name, long value) {
-        val element = new ADNUInt64(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public float putFP32(@NotNull String name, float value) {
-        val element = new ADNFP32(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public double putFP64(@NotNull String name, double value) {
-        val element = new ADNFP64(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public String putString(@NotNull String name, String value) {
-        val element = new ADNString(name, value);
-        put(name, element);
-        return element.getValue();
-    }
-
-    public ADNObject putObject(@NotNull String name, Object value) {
-        if(value == null) {
-            put(name, null);
-            return null;
+        if (element == null) {
+            throw new InvalidKeyException();
         }
 
-        val object = new ADNObject(name);
-        val fields = value.getClass().getDeclaredFields();
+        return element;
+    }
 
-        for(val field : fields) {
-            if(Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
+    public ADNElement get(@NotNull String key) throws InvalidKeyException {
+        val element = super.get(key);
 
-            try {
-                val fieldName = field.getName();
-                val fieldValue = field.get(value);
-
-                if(fieldValue instanceof Boolean) {
-                    object.putBoolean(fieldName, (Boolean)fieldValue);
-                    continue;
-                }
-
-                if(fieldValue instanceof Byte) {
-                    object.putByte(fieldName, (Byte)fieldValue);
-                    continue;
-                }
-
-                if(fieldValue instanceof Character) {
-                    object.putCharacter(fieldName, (Character)fieldValue);
-                    continue;
-                }
-
-                if(fieldValue instanceof Integer) {
-                    object.putInteger(fieldName, (Integer)fieldValue);
-                    continue;
-                }
-
-                if(fieldValue instanceof Long) {
-                    object.putLong(fieldName, (Long)fieldValue);
-                    continue;
-                }
-
-                if(fieldValue instanceof Float) {
-                    object.putFloat(fieldName, (Float)fieldValue);
-                    continue;
-                }
-
-                if(fieldValue instanceof Double) {
-                    object.putDouble(fieldName, (Double)fieldValue);
-                    continue;
-                }
-
-                if(fieldValue instanceof String) {
-                    object.putString(fieldName, (String)fieldValue);
-                    continue;
-                }
-
-                object.putObject(fieldName, fieldValue);
-
-            } catch (IllegalAccessException ignored) { }
+        if (element == null) {
+            throw new InvalidKeyException();
         }
 
-        put(name, object);
-        return object;
+        return element;
+    }
+
+    @Nullable
+    public Boolean putBoolean(@NotNull String key, boolean value) {
+        return (Boolean) ADNElement.valueOf(put(key, new ADNBoolean(key, value)));
+    }
+
+    @Nullable
+    public Byte putInt8(@NotNull String key, byte value) {
+        return (Byte) ADNElement.valueOf(put(key, new ADNInt8(key, value)));
+    }
+
+    @Nullable
+    public Short putInt16(@NotNull String key, short value) {
+        return (Short) ADNElement.valueOf(put(key, new ADNInt16(key, value)));
+    }
+
+    @Nullable
+    public Integer putInt32(@NotNull String key, int value) {
+        return (Integer) ADNElement.valueOf(put(key, new ADNInt32(key, value)));
+    }
+
+    @Nullable
+    public Long putInt64(@NotNull String key, long value) {
+        return (Long) ADNElement.valueOf(put(key, new ADNInt64(key, value)));
+    }
+
+    @Nullable
+    public Float putFloat32(@NotNull String key, float value) {
+        return (Float) ADNElement.valueOf(put(key, new ADNFP32(key, value)));
+    }
+
+    @Nullable
+    public Double putFloat64(@NotNull String key, double value) {
+        return (Double) ADNElement.valueOf(put(key, new ADNFP64(key, value)));
+    }
+
+    @Nullable
+    public String putString(@NotNull String key, @NotNull String value) {
+        return (String) ADNElement.valueOf(put(key, new ADNString(key, value)));
+    }
+
+    @Nullable
+    public Object putObject(@NotNull String key, @NotNull List<ADNElement> value) {
+        return ADNElement.valueOf(put(key, new ADNObject(key, value)));
+    }
+
+    @Nullable
+    public Object putObject(@NotNull String key, @NotNull ADNElement[] value) {
+        return ADNElement.valueOf(put(key, new ADNObject(key, List.of(value))));
     }
 
     public boolean getBoolean(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement bool = getElementByIdentifier(key);
+        return findBoolean(key).getValue();
+    }
 
-        if(bool.typeOf(ADNType.BOOLEAN)) {
-            throw new InvalidCastException();
+    @NotNull
+    public ADNBoolean findBoolean(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toBoolean(get(key));
+    }
+
+    public Boolean tryGetBoolean(@NotNull String key) {
+        val value = tryFindBoolean(key);
+        return value != null ? value.getValue() : null;
+    }
+
+    @Nullable
+    public ADNBoolean tryFindBoolean(@NotNull String key) {
+        try {
+            return findBoolean(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
         }
-
-        return ((ADNBoolean)bool).getValue();
     }
 
     public byte getInt8(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement int8 = getElementByIdentifier(key);
-
-        if(int8.typeOf(ADNType.INT8)) {
-            throw new InvalidCastException();
-        }
-
-        return ((ADNInt8)int8).getValue();
+        return findInt8(key).getValue();
     }
 
-    public char getInt16(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement int16 = getElementByIdentifier(key);
+    @NotNull
+    public ADNInt8 findInt8(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toInt8(get(key));
+    }
 
-        if(int16.typeOf(ADNType.INT16)) {
-            throw new InvalidCastException();
+    public Byte tryGetInt8(@NotNull String key) {
+        val value = tryFindInt8(key);
+        return value != null ? value.getValue() : null;
+    }
+
+    @Nullable
+    public ADNInt8 tryFindInt8(@NotNull String key) {
+        try {
+            return findInt8(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
         }
+    }
 
-        return ((ADNInt16)int16).getValue();
+    public short getInt16(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return findInt16(key).getValue();
+    }
+
+    @NotNull
+    public ADNInt16 findInt16(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toInt16(get(key));
+    }
+
+    public Short tryGet16(@NotNull String key) {
+        val value = tryFindInt16(key);
+        return value != null ? value.getValue() : null;
+    }
+
+    @Nullable
+    public ADNInt16 tryFindInt16(@NotNull String key) {
+        try {
+            return findInt16(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
+        }
     }
 
     public int getInt32(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement int32 = getElementByIdentifier(key);
+        return findInt32(key).getValue();
+    }
 
-        if(int32.typeOf(ADNType.INT32)) {
-            throw new InvalidCastException();
+    @NotNull
+    public ADNInt32 findInt32(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toInt32(get(key));
+    }
+
+    public Integer tryGetInt32(@NotNull String key) {
+        val value = tryFindInt32(key);
+        return value != null ? value.getValue() : null;
+    }
+
+    @Nullable
+    public ADNInt32 tryFindInt32(@NotNull String key) {
+        try {
+            return findInt32(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
         }
-
-        return ((ADNInt32)int32).getValue();
     }
 
     public long getInt64(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement int64 = getElementByIdentifier(key);
-
-        if(int64.typeOf(ADNType.INT64)) {
-            throw new InvalidCastException();
-        }
-
-        return ((ADNInt64)int64).getValue();
+        return findInt64(key).getValue();
     }
 
-    public long getUInt8(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement uint8 = getElementByIdentifier(key);
-
-        if(uint8.typeOf(ADNType.UINT8)) {
-            throw new InvalidCastException();
-        }
-
-        return ((ADNUInt8)uint8).getValue();
+    @NotNull
+    public ADNInt64 findInt64(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toInt64(get(key));
     }
 
-    public long getUInt16(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement uint16 = getElementByIdentifier(key);
-
-        if(uint16.typeOf(ADNType.UINT16)) {
-            throw new InvalidCastException();
-        }
-
-        return ((ADNUInt16)uint16).getValue();
+    public Long tryGetInt64(@NotNull String key) {
+        val value = tryFindInt64(key);
+        return value != null ? value.getValue() : null;
     }
 
-    public long getUInt32(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement uint32 = getElementByIdentifier(key);
-
-        if(uint32.typeOf(ADNType.UINT32)) {
-            throw new InvalidCastException();
+    @Nullable
+    public ADNInt64 tryFindInt64(@NotNull String key) {
+        try {
+            return findInt64(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
         }
-
-        return ((ADNUInt32)uint32).getValue();
     }
 
-    public long getUInt64(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement uint64 = getElementByIdentifier(key);
-
-        if(uint64.typeOf(ADNType.UINT64)) {
-            throw new InvalidCastException();
-        }
-
-        return ((ADNUInt64)uint64).getValue();
+    public float getFloat32(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return findFloat32(key).getValue();
     }
 
+    @NotNull
+    public ADNFP32 findFloat32(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toFloat32(get(key));
+    }
+
+    public Float tryGetFloat32(@NotNull String key) {
+        val value = tryFindFloat32(key);
+        return value != null ? value.getValue() : null;
+    }
+
+    @Nullable
+    public ADNFP32 tryFindFloat32(@NotNull String key) {
+        try {
+            return findFloat32(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
+        }
+    }
+
+    public double getFloat64(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return findFloat64(key).getValue();
+    }
+
+    @NotNull
+    public ADNFP64 findFloat64(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toFloat64(get(key));
+    }
+
+    public Double tryGetFloat64(@NotNull String key) {
+        val value = tryFindFloat64(key);
+        return value != null ? value.getValue() : null;
+    }
+
+    @Nullable
+    public ADNFP64 tryFindFloat64(@NotNull String key) {
+        try {
+            return findFloat64(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
+        }
+    }
+
+    @NotNull
     public String getString(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement element = getElementByIdentifier(key);
-
-        if(element.typeOf(ADNType.STRING)) {
-            throw new InvalidCastException();
-        }
-
-        return ((ADNString)element).getValue();
+        return findString(key).getValue();
     }
 
-    public ADNObject getObject(@NotNull String key) throws InvalidKeyException, InvalidCastException {
-        final ADNElement element = getElementByIdentifier(key);
-
-        if(element.typeOf(ADNType.OBJECT)) {
-            throw new InvalidCastException();
-        }
-
-        return (ADNObject)element;
+    @NotNull
+    public ADNString findString(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toString(get(key));
     }
 
-    @Setter
-    private int indent;
+    @Nullable
+    public String tryGetString(@NotNull String key) {
+        val value = tryFindString(key);
+        return value != null ? value.getValue() : null;
+    }
+
+    @Nullable
+    public ADNString tryFindString(@NotNull String key) {
+        try {
+            return findString(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
+        }
+    }
+
+    @NotNull
+    public Object getObject(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return findObject(key).getValue();
+    }
+
+    @NotNull
+    public ADNObject findObject(@NotNull String key) throws InvalidKeyException, InvalidCastException {
+        return Caster.toObject(get(key));
+    }
+
+    @Nullable
+    public Object tryGetObject(@NotNull String key) {
+        val value = tryFindObject(key);
+        return value != null ? value.getValue() : null;
+    }
+
+    @Nullable
+    public ADNObject tryFindObject(@NotNull String key) {
+        try {
+            return findObject(key);
+        } catch (InvalidKeyException | InvalidCastException ignore) {
+            return null;
+        }
+    }
 
     public void prettyPrint() {
         System.out.println(getIndent() + name + " = [");
 
         val values = values();
-        for(val value : values) {
-            if(!(value instanceof ADNObject)) {
+        for (val value : values) {
+            if (!(value instanceof ADNObject)) {
                 val v = value.getValue();
                 System.out.println(getIndent() + value.getName() + " -> " + (v == null ? "null" : v.toString()));
                 continue;
@@ -381,35 +351,6 @@ public class ADNObject extends HashMap<String, ADNElement> implements ADNElement
 
 
     private @NotNull String getIndent() {
-        StringBuilder s = new StringBuilder();
-        for(int i = indent; i > 0; i--) {
-            s.append("\t");
-        }
-        return s.toString();
-    }
-
-    public void saveTo(String path) throws IOException {
-        File file = new File(path);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        writer.write(textify(new StringBuilder(), 0));
-        writer.flush();
-        writer.close();
-    }
-
-    @Override
-    public String textify(StringBuilder builder, int indent) {
-        builder.append(getIndent(indent)).append("object ").append(name).append(" = {").append('\n');
-
-        for (ADNElement element : values()) {
-            if(element == null) {
-                builder.append(getIndent(indent + 1)).append("object ").append(name).append(" = null;\n");
-                continue;
-            }
-
-            element.textify(builder, indent + 1);
-        }
-
-        builder.append(getIndent(indent)).append("}\n");
-        return builder.toString();
+        return "\t".repeat(Math.max(0, indent));
     }
 }

@@ -1,9 +1,24 @@
-package main.java.io.alliance.adn.element;
+package io.alliance.adn.element;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface ADNElement {
+
+    @Nullable
+    static Object valueOf(@Nullable ADNElement element) {
+        return element != null ? element.getValue() : null;
+    }
+
+    @Nullable
+    static String nameOf(@Nullable ADNElement element) {
+        return element != null ? element.getName() : null;
+    }
+
+    @Nullable
+    static ADNType typeOf(@Nullable ADNElement element) {
+        return element != null ? element.getType() : null;
+    }
 
     default boolean typeOf(@NotNull ADNType type) {
         return getType() == type;
@@ -21,16 +36,4 @@ public interface ADNElement {
     @NotNull
     @Override
     String toString();
-
-    String textify(StringBuilder builder, int indent);
-
-    default String getIndent(int indent) {
-        StringBuilder tabs = new StringBuilder();
-
-        for(int i = indent; i > 0; i--) {
-            tabs.append("\t");
-        }
-
-        return tabs.toString();
-    }
 }

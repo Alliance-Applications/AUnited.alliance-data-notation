@@ -1,10 +1,10 @@
-package main.java.io.alliance.adn.parser;
+package io.alliance.adn.parser;
 
 import io.alliance.adn.element.*;
-import main.java.io.alliance.adn.Walkable;
-import main.java.io.alliance.adn.exception.ParsingException;
-import main.java.io.alliance.adn.lexer.Token;
-import main.java.io.alliance.adn.lexer.TokenType;
+import io.alliance.adn.Walkable;
+import io.alliance.adn.exception.ParsingException;
+import io.alliance.adn.lexer.Token;
+import io.alliance.adn.lexer.TokenType;
 import lombok.val;
 
 import java.util.LinkedList;
@@ -46,10 +46,6 @@ public class Parser extends Walkable<Token> {
             case INT16:
             case INT32:
             case INT64:
-            case UINT8:
-            case UINT16:
-            case UINT32:
-            case UINT64:
             case FP32:
             case FP64:
                 return parseNumeric(type.getType());
@@ -90,19 +86,11 @@ public class Parser extends Walkable<Token> {
             case INT8:
                 return new ADNInt8(name.getText(), Byte.parseByte(value.getText()));
             case INT16:
-                return new ADNInt16(name.getText(), (char)Integer.parseInt(value.getText()));
+                return new ADNInt16(name.getText(), Short.parseShort(value.getText()));
             case INT32:
                 return new ADNInt32(name.getText(), Integer.parseInt(value.getText()));
             case INT64:
                 return new ADNInt64(name.getText(), Long.parseLong(value.getText()));
-            case UINT8:
-                return new ADNUInt8(name.getText(), Long.parseUnsignedLong(value.getText()) & 0xFF);
-            case UINT16:
-                return new ADNUInt16(name.getText(), Long.parseUnsignedLong(value.getText()) & 0xFFFF);
-            case UINT32:
-                return new ADNUInt32(name.getText(), Long.parseUnsignedLong(value.getText()));
-            case UINT64:
-                return new ADNUInt64(name.getText(), Long.parseUnsignedLong(value.getText()));
             case FP32:
                 return new ADNFP32(name.getText(), Float.parseFloat(value.getText()));
             case FP64:

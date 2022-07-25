@@ -1,4 +1,4 @@
-package main.java.io.alliance.adn.element;
+package io.alliance.adn.element;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,10 +23,5 @@ public final class ADNBoolean implements ADNElement {
     @Override
     public @NotNull Boolean getValue() {
         return value;
-    }
-
-    @Override
-    public String textify(StringBuilder builder, int indent) {
-        return builder.append(getIndent(indent)).append("boolean ").append(name).append(" = ").append(value).append(";\n").toString();
     }
 }

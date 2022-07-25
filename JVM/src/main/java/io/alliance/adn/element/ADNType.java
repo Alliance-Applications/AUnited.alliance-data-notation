@@ -1,4 +1,4 @@
-package main.java.io.alliance.adn.element;
+package io.alliance.adn.element;
 
 public enum ADNType {
     BOOLEAN("boolean"),
@@ -6,10 +6,6 @@ public enum ADNType {
     INT16("int16"),
     INT32("int32"),
     INT64("int64"),
-    UINT8("uint8"),
-    UINT16("uint16"),
-    UINT32("uint32"),
-    UINT64("uint64"),
     FP32("fp32"),
     FP64("fp64"),
     STRING("string"),

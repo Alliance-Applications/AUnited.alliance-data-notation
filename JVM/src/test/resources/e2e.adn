@@ -1,0 +1,13 @@
+struct testContainer = {
+	bool isTestObject = false;
+	int8 byte = 127;
+	int16 char
+	int64 id = 0;
+	string name = "test container\\";
+	object testObject = {
+		int64 id = 1;
+		boolean isTestObject = true;
+		string name = "test object\\";
+		object subObject = null;
+	};
+};

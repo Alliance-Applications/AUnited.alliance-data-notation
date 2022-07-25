@@ -1,4 +1,4 @@
-package main.java.io.alliance.adn.lexer;
+package io.alliance.adn.lexer;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

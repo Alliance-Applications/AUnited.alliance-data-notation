@@ -1,4 +1,4 @@
-package main.java.io.alliance.adn;
+package io.alliance.adn;
 
 import lombok.RequiredArgsConstructor;
 

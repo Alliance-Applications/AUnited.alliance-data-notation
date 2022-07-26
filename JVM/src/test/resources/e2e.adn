@@ -1,4 +1,4 @@
-struct SingletonContainer = {
+struct SingletonContainer {
 	bool isTestObject = false;
 	i8 byte = 127;
 	i16 char = 65535;
@@ -7,7 +7,7 @@ struct SingletonContainer = {
 	f32 float = 0;
 	f64 double = 0;
 	str name = "test container\\";
-	struct ArrayContainer = {
+	struct ArrayContainer {
         i32[][] matrix = [
             [0, 1],
             [1, 0]

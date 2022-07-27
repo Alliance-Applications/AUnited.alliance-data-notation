@@ -1,44 +1,60 @@
 package io.alliance.adn.semantic;
 
-import io.alliance.adn.Walkable;
+import org.jetbrains.annotations.NotNull;
 
 enum TokenKind {
-    MISC_END_OF_FILE,
-    MISC_BAD_TOKEN,
+    MISC_END_OF_FILE(false, false),
+    MISC_BAD_TOKEN(false, false),
 
-    KEYWORD_STRUCT,
-    KEYWORD_ARRAY,
-    KEYWORD_BOOL,
-    KEYWORD_I8,
-    KEYWORD_I16,
-    KEYWORD_I32,
-    KEYWORD_I64,
-    KEYWORD_F32,
-    KEYWORD_F64,
-    KEYWORD_STR,
+    IDENTIFIER(false, false),
 
-    TOKEN_BRACE_OPEN,
-    TOKEN_BRACE_CLOSE,
-    TOKEN_BRACKET_OPEN,
-    TOKEN_BRACKET_CLOSE,
-    TOKEN_EQUAL,
-    TOKEN_COMMA,
-    TOKEN_SEMICOLON,
-    TOKEN_IDENTIFIER,
+    KEYWORD_STRUCT(false, false),
+    KEYWORD_ARRAY(false, false),
+    KEYWORD_BOOL(true, false),
+    KEYWORD_I8(true, false),
+    KEYWORD_I16(true, false),
+    KEYWORD_I32(true, false),
+    KEYWORD_I64(true, false),
+    KEYWORD_F32(true, false),
+    KEYWORD_F64(true, false),
+    KEYWORD_STR(true, false),
 
-    LITERAL_TRUE,
-    LITERAL_FALSE,
-    LITERAL_NUMBER,
-    LITERAL_FLOAT,
-    LITERAL_STRING
+    TOKEN_BRACE_OPEN(false, false),
+    TOKEN_BRACE_CLOSE(false, false),
+    TOKEN_BRACKET_OPEN(false, false),
+    TOKEN_BRACKET_CLOSE(false, false),
+    TOKEN_SET(false, false),
+    TOKEN_COMMA(false, false),
+    TOKEN_COLON(false, false),
+    TOKEN_SEMICOLON(false, false),
+
+    LITERAL_TRUE(false, true),
+    LITERAL_FALSE(false, true),
+    LITERAL_NUMBER(false, true),
+    LITERAL_FLOAT(false, true),
+    LITERAL_STRING(false, true);
+
+    public final boolean isPrimitive;
+    public final boolean isLiteral;
+
+    TokenKind(boolean isPrimitive, boolean isLiteral) {
+        this.isPrimitive = isPrimitive;
+        this.isLiteral = isLiteral;
+    }
 }
 
 public interface Token {
-
+    @NotNull
     TokenKind getKind();
-    boolean isLiteral();
-    boolean isStructural();
-    boolean isLiteral();
+}
+
+class TokenIdentifier implements Token {
+
+    @Override
+    public @NotNull TokenKind getKind() {
+        return TokenKind.IDENTIFIER;
+    }
+
 }
 
 interface Element {
@@ -55,41 +71,19 @@ class ElementStruct implements Element {
 
 class ElementRoot extends ElementStruct {
 
+    public void add(Element element) {
+
+    }
 }
 
 class ElementLiteral implements Element {
 
+    @NotNull
+    public static ElementLiteral create(@NotNull TokenIdentifier identifier, @NotNull TokenKind type, @NotNull Token value) {
+
+    }
 }
 
 class ElementBool extends ElementLiteral {
 
-}
-
-class Parser extends Walkable<Token> {
-
-    private Token match(TokenKind kind) {
-        if(current().getKind() == kind) {
-            return next();
-        }
-
-        throw new Exception("Nah bro");
-    }
-
-    public Parser(Token[] input) {
-        super(input);
-    }
-
-    public ElementRoot parse() {
-        final ElementRoot root = new ElementRoot();
-
-        while (current().getKind() != TokenKind.MISC_END_OF_FILE) {
-            root.add(parseElement());
-        }
-
-        return root;
-    }
-
-    public ElementLiteral parseLiteral() {
-        TokenIdentifier identifier = match()
-    }
 }

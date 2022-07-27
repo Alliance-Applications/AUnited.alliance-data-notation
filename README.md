@@ -25,6 +25,9 @@ anyone who wants to use it or contribute is welcome to do so.
 | struct   | HashSet<T>   | HashSet<T>   | HashSet<T> | -        |
 
 ## Syntax:
+### Naming:
+Names may contain uppercase letters (A..Z), lowercase letters (a..z), numbers (0..9) or underscores ( _ ). The names *MUST* start with a letter in either case though. 
+
 ### Inferrable types:
 - bool: `true` or `false`
 - i32: whole numbers numbers (e.g. `12`)

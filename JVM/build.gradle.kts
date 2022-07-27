@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
@@ -13,7 +15,8 @@ buildscript {
 }
 
 plugins {
-    id("java-library")
+    kotlin("jvm") version "1.7.10"
+    `java-library`
     `maven-publish`
 }
 
@@ -59,6 +62,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:1.18.24")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.24")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 repositories {
@@ -70,4 +74,14 @@ repositories {
             password = "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiI0ZjI3NWY3My0zNjc4LTQ5ZDAtYjc0OS0xNmExNjM0N2Q5N2YiLCJhdWQiOiI0ZjI3NWY3My0zNjc4LTQ5ZDAtYjc0OS0xNmExNjM0N2Q5N2YiLCJvcmdEb21haW4iOiJhbGxpYW5jZS1zb2Z0d2FyZSIsIm5hbWUiOiJLeXVrZXoiLCJpc3MiOiJodHRwczpcL1wvYWxsaWFuY2Utc29mdHdhcmUuamV0YnJhaW5zLnNwYWNlIiwicGVybV90b2tlbiI6IjVXRzRqME9OSkc0IiwicHJpbmNpcGFsX3R5cGUiOiJTRVJWSUNFIiwiaWF0IjoxNjQzNjI5MzAzfQ.kFXjgVOK7uf71hZZMsPISzhV6OnUkXw3SFsHPj9HjlE1o2C9vqyzkIyG7tCHyzIl8e-qNsXTJk4qOOmpGyxeDlKu5Qenhjdt9usUwLSCPzRMfhxliUyYC7U58I0cmLz5qazR69dKKwL9g9oqk_b_qNCv1XMj4uFPLEVBHv_uI2A"
         }
     }
+}
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
 }

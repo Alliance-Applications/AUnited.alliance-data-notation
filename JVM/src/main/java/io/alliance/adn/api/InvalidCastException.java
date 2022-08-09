@@ -1,7 +1,6 @@
-package io.alliance.adn.exception;
+package io.alliance.adn.api;
 
-import io.alliance.adn.element.ADNElement;
-import io.alliance.adn.element.ADNType;
+import io.alliance.adn.data.ElementType;
 import org.jetbrains.annotations.NotNull;
 
 public class InvalidCastException extends RuntimeException {
@@ -10,18 +9,12 @@ public class InvalidCastException extends RuntimeException {
     private final String elementName;
 
     @NotNull
-    private final ADNType actualType;
+    private final ElementType actualType;
 
     @NotNull
-    private final ADNType expectedType;
+    private final ElementType expectedType;
 
-    public InvalidCastException(@NotNull ADNElement element, @NotNull ADNType expectedType) {
-        elementName = element.getName();
-        actualType = element.getType();
-        this.expectedType = expectedType;
-    }
-
-    public InvalidCastException(@NotNull String elementName, @NotNull ADNType actualType, @NotNull ADNType expectedType) {
+    public InvalidCastException(@NotNull String elementName, @NotNull ElementType actualType, @NotNull ElementType expectedType) {
         this.elementName = elementName;
         this.actualType = actualType;
         this.expectedType = expectedType;

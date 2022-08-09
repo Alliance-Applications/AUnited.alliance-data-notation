@@ -1,14 +1,14 @@
 package io.alliance.adn.syntactic
 
-import io.alliance.adn.data.ElementArray
-import io.alliance.adn.data.ElementLiteral
-import io.alliance.adn.data.ElementRoot
-import io.alliance.adn.data.ElementStruct
-import io.alliance.adn.data.ElementType
+import io.alliance.adn.api.kotlin.Dataset
 import io.alliance.adn.Walkable
 import io.alliance.adn.api.InvalidCastException
 import io.alliance.adn.api.InvalidTokenException
-import io.alliance.adn.data.*
+import io.alliance.adn.api.kotlin.DataNode
+import io.alliance.adn.api.kotlin.DataList
+import io.alliance.adn.api.kotlin.Datapoint
+import io.alliance.adn.api.kotlin.DataStruct
+import io.alliance.adn.api.kotlin.DataType
 import io.alliance.adn.semantic.Token
 import io.alliance.adn.semantic.TokenIdentifier
 import io.alliance.adn.semantic.TokenKind
@@ -49,8 +49,8 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
         throw InvalidTokenException("Unexpected token <$current>, expected literal value")
     }
 
-    internal fun parse(): ElementRoot {
-        val root = ElementRoot()
+    internal fun parse(): Dataset {
+        val root = Dataset()
 
         while (!(current kindOf MISC_END_OF_FILE)) {
             root += parseElement()
@@ -59,7 +59,7 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
         return root
     }
 
-    private fun parseElement(): Element {
+    private fun parseElement(): DataNode {
         // Sort out structs first
 
         // struct MyStruct {
@@ -106,16 +106,16 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
         }
 
         if (depth > 0) {
-            return parseArray(identifier, ElementType.NULL, depth)
+            return parseArray(identifier, DataType.NULL, depth)
         }
 
         return parseLiteral(identifier, null)
     }
 
-    private fun parseStruct(identifier: TokenIdentifier): Element {
+    private fun parseStruct(identifier: TokenIdentifier): DataNode {
         match(TOKEN_BRACE_OPEN)
 
-        val struct = ElementStruct(identifier.name)
+        val struct = DataStruct(identifier.name)
         while (!(current kindOf TOKEN_BRACE_CLOSE)) {
             struct += parseElement()
         }
@@ -124,11 +124,11 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
         return struct
     }
 
-    private fun parseArray(identifier: TokenIdentifier, expectedType: ElementType, depth: Int): Element {
+    private fun parseArray(identifier: TokenIdentifier, expectedType: DataType, depth: Int): DataNode {
         // <MyArray> [ [ 2, 9 ], [
         val (actualType, elements) = parseArrayElement()
 
-        if (expectedType == ElementType.NULL) {
+        if (expectedType == DataType.NULL) {
             return mapArray(identifier.name, elements, actualType, -(1 - depth), 0)
         }
 
@@ -139,9 +139,9 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
         return mapArray(identifier.name, elements, expectedType, -(1 - depth), 0)
     }
 
-    private fun mapArray(name: String, list: ArrayList<*>, type: ElementType, depth: Int, layer: Int): ElementArray {
+    private fun mapArray(name: String, list: ArrayList<*>, type: DataType, depth: Int, layer: Int): DataList {
         if (depth != layer) {
-            val array = ElementArray(name, type, -(layer - depth))
+            val array = DataList(name, type, -(layer - depth))
 
             for (nestedList in list) {
                 array += mapArray(name, nestedList as ArrayList<*>, type, depth, layer + 1)
@@ -150,19 +150,19 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
             return array
         }
 
-        val array = ElementArray(name, type, 0)
+        val array = DataList(name, type, 0)
 
         // parseArrayElement cannot produce a list of anything else on the deepest nesting level.
         @Suppress("UNCHECKED_CAST")
         for (value in list as ArrayList<TokenLiteral>) {
-            array += ElementLiteral.anonymous(value.value, type)
+            array += Datapoint.anonymous(value.value, type)
         }
 
         return array
     }
 
-    private fun parseArrayElement(): Pair<ElementType, ArrayList<*>> {
-        var type = ElementType.NULL
+    private fun parseArrayElement(): Pair<DataType, ArrayList<*>> {
+        var type = DataType.NULL
 
         match(TOKEN_BRACKET_OPEN)
 
@@ -203,7 +203,7 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
         return Pair(type, list)
     }
 
-    private fun parseLiteral(identifier: TokenIdentifier, maybeType: TokenType?): ElementLiteral<*> {
+    private fun parseLiteral(identifier: TokenIdentifier, maybeType: TokenType?): Datapoint<*> {
         // value: u32 = 0;
         // Equals and semicolon may be omitted
 
@@ -218,7 +218,7 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
             consume
         }
 
-        return ElementLiteral.create(identifier, type, value)
+        return Datapoint.create(identifier, type, value)
     }
 
     private fun inferKind(kind: TokenKind): TokenKind {
@@ -231,12 +231,12 @@ internal class Parser(input: List<Token>) : Walkable<Token>(input) {
         }
     }
 
-    private fun inferType(token: TokenLiteral): ElementType {
+    private fun inferType(token: TokenLiteral): DataType {
         return when (token.kind) {
-            LITERAL_TRUE, LITERAL_FALSE -> ElementType.BOOL
-            LITERAL_NUMBER -> ElementType.I32
-            LITERAL_FLOAT -> ElementType.F32
-            LITERAL_STRING -> ElementType.STR
+            LITERAL_TRUE, LITERAL_FALSE -> DataType.BOOL
+            LITERAL_NUMBER -> DataType.I32
+            LITERAL_FLOAT -> DataType.F32
+            LITERAL_STRING -> DataType.STR
             else -> throw InvalidTokenException("Unexpected token <$current>, expected literal")
         }
     }

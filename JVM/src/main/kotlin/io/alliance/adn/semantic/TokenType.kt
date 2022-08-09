@@ -1,7 +1,7 @@
 package io.alliance.adn.semantic
 
 import io.alliance.adn.api.InvalidTokenException
-import io.alliance.adn.data.ElementType
+import io.alliance.adn.api.kotlin.DataType
 import io.alliance.adn.semantic.TokenKind.*
 
 internal class TokenType(override val kind: TokenKind) : Token {
@@ -20,16 +20,16 @@ internal class TokenType(override val kind: TokenKind) : Token {
         }
     }
 
-    fun asType(): ElementType {
+    fun asType(): DataType {
         return when (this.kind) {
-            KEYWORD_BOOL -> ElementType.BOOL
-            KEYWORD_I8 -> ElementType.I8
-            KEYWORD_I16 -> ElementType.I16
-            KEYWORD_I32 -> ElementType.I32
-            KEYWORD_I64 -> ElementType.I64
-            KEYWORD_F32 -> ElementType.F32
-            KEYWORD_F64 -> ElementType.F64
-            KEYWORD_STR -> ElementType.STR
+            KEYWORD_BOOL -> DataType.BOOL
+            KEYWORD_I8 -> DataType.I8
+            KEYWORD_I16 -> DataType.I16
+            KEYWORD_I32 -> DataType.I32
+            KEYWORD_I64 -> DataType.I64
+            KEYWORD_F32 -> DataType.F32
+            KEYWORD_F64 -> DataType.F64
+            KEYWORD_STR -> DataType.STR
             else -> throw InvalidTokenException("Unexpected token $this, is not a primitive!")
         }
     }

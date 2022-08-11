@@ -1,48 +1,23 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-repositories {
-    gradlePluginPortal()
-    mavenCentral()
-    mavenLocal()
-    maven {
-        url = uri("https://maven.pkg.jetbrains.space/alliance-software/p/dngames/kyukez")
-        credentials {
-            username = "4f275f73-3678-49d0-b749-16a16347d97f"
-            password = "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiI0ZjI3NWY3My0zNjc4LTQ5ZDAtYjc0OS0xNmExNjM0N2Q5N2YiLCJhdWQiOiI0ZjI3NWY3My0zNjc4LTQ5ZDAtYjc0OS0xNmExNjM0N2Q5N2YiLCJvcmdEb21haW4iOiJhbGxpYW5jZS1zb2Z0d2FyZSIsIm5hbWUiOiJLeXVrZXoiLCJpc3MiOiJodHRwczpcL1wvYWxsaWFuY2Utc29mdHdhcmUuamV0YnJhaW5zLnNwYWNlIiwicGVybV90b2tlbiI6IjVXRzRqME9OSkc0IiwicHJpbmNpcGFsX3R5cGUiOiJTRVJWSUNFIiwiaWF0IjoxNjQzNjI5MzAzfQ.kFXjgVOK7uf71hZZMsPISzhV6OnUkXw3SFsHPj9HjlE1o2C9vqyzkIyG7tCHyzIl8e-qNsXTJk4qOOmpGyxeDlKu5Qenhjdt9usUwLSCPzRMfhxliUyYC7U58I0cmLz5qazR69dKKwL9g9oqk_b_qNCv1XMj4uFPLEVBHv_uI2A"
-        }
-    }
-}
+val compileKotlin: KotlinCompile by tasks
+val compileTestKotlin: KotlinCompile by tasks
 
 plugins {
+    // Languages
     java
     `java-library`
     kotlin("jvm") version "1.7.20-Beta"
 
-    // Plugin which checks for dependency updates with help/dependencyUpdates task.
-    id("com.github.ben-manes.versions") version "0.42.0"
+    // Testing
+    jacoco
 
-    // Plugin which can update Gradle dependencies, use help/useLatestVersions
-    id("se.patrikerdes.use-latest-versions") version "0.2.18"
-
+    // Publishing
     `maven-publish`
 
-    // Test coverage
-    jacoco
-}
-
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    repositories {
-        mavenCentral()
-        mavenLocal()
-        maven {
-            url = uri("https://maven.pkg.jetbrains.space/alliance-software/p/dngames/kyukez")
-            credentials {
-                username = "4f275f73-3678-49d0-b749-16a16347d97f"
-                password = "eyJhbGciOiJSUzUxMiJ9.eyJzdWIiOiI0ZjI3NWY3My0zNjc4LTQ5ZDAtYjc0OS0xNmExNjM0N2Q5N2YiLCJhdWQiOiI0ZjI3NWY3My0zNjc4LTQ5ZDAtYjc0OS0xNmExNjM0N2Q5N2YiLCJvcmdEb21haW4iOiJhbGxpYW5jZS1zb2Z0d2FyZSIsIm5hbWUiOiJLeXVrZXoiLCJpc3MiOiJodHRwczpcL1wvYWxsaWFuY2Utc29mdHdhcmUuamV0YnJhaW5zLnNwYWNlIiwicGVybV90b2tlbiI6IjVXRzRqME9OSkc0IiwicHJpbmNpcGFsX3R5cGUiOiJTRVJWSUNFIiwiaWF0IjoxNjQzNjI5MzAzfQ.kFXjgVOK7uf71hZZMsPISzhV6OnUkXw3SFsHPj9HjlE1o2C9vqyzkIyG7tCHyzIl8e-qNsXTJk4qOOmpGyxeDlKu5Qenhjdt9usUwLSCPzRMfhxliUyYC7U58I0cmLz5qazR69dKKwL9g9oqk_b_qNCv1XMj4uFPLEVBHv_uI2A"
-            }
-        }
-    }
+    // QOL
+    id("com.github.ben-manes.versions") version "0.42.0"
+    id("se.patrikerdes.use-latest-versions") version "0.2.18"
 }
 
 java {
@@ -50,12 +25,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = "11"
 }
 
-val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {
     jvmTarget = "11"
 }
@@ -69,7 +42,7 @@ tasks {
     test {
         useJUnitPlatform {
             includeEngines("junit-jupiter")
-            // excludeEngines("junit-vintage")
+            excludeEngines("junit-vintage")
         }
 
         systemProperty("junit.jupiter.conditions.deactivate", "*")
@@ -80,34 +53,34 @@ tasks {
 
 afterEvaluate {
     publishing {
-        publications {
-            repositories {
-                maven {
-                    url = uri("")
-                    credentials {
-                        username = "e1aad9c9-b16f-4fbe-a4ac-05aa27af9a52"
-                        password = "58014d491e86822f911a6612a947a3cf1b337d06fa745c541d63537ed3c65bbb"
-                    }
+        repositories {
+            maven {
+                credentials {
+                    // Automation has a special account for authentication in Space
+                    // account credentials are accessible via env vars
+                    username = System.getenv("JB_SPACE_CLIENT_ID")
+                    password = System.getenv("JB_SPACE_CLIENT_SECRET")
                 }
-            }
 
+                url = uri("https://maven.pkg.jetbrains.space/alliance-software/p/alliance-public/maven")
+            }
+        }
+
+        publications {
             create<MavenPublication>("maven") {
                 groupId = "io.alliance.toolset"
-                artifactId = "adn"
+                artifactId = "adn-jvm"
                 version = "1.0.0-SNAPSHOT"
                 from(components["java"])
+
+                pom.name.set("Alliance data notation")
+                pom.description.set("A description of my library")
             }
         }
     }
 }
 
 dependencies {
-    compileOnly("org.projectlombok:lombok:1.18.24")
-    annotationProcessor("org.projectlombok:lombok:1.18.24")
-
-    testCompileOnly("org.projectlombok:lombok:1.18.24")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.24")
-
     implementation("org.jetbrains:annotations:23.0.0")
 
     implementation(kotlin("stdlib-jdk8"))

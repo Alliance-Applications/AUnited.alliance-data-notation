@@ -16,4 +16,9 @@ internal class TokenLiteral(override val kind: TokenKind, val value: String) : T
         }
     }
 
+    companion object {
+        val TRUE: TokenLiteral = TokenLiteral(LITERAL_TRUE, "true")
+        val FALSE: TokenLiteral = TokenLiteral(LITERAL_FALSE, "false")
+    }
+
 }

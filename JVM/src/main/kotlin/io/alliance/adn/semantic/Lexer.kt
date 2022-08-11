@@ -149,17 +149,17 @@ internal class Lexer(input: List<Char>) : Walkable<Char>(input) {
 
         return when (text) {
             "struct" -> TokenStructural(TokenKind.KEYWORD_STRUCT)
-            "bool" -> TokenStructural(TokenKind.KEYWORD_BOOL)
-            "i8" -> TokenStructural(TokenKind.KEYWORD_I8)
-            "i16" -> TokenStructural(TokenKind.KEYWORD_I16)
-            "i32" -> TokenStructural(TokenKind.KEYWORD_I32)
-            "i64" -> TokenStructural(TokenKind.KEYWORD_I64)
-            "f32" -> TokenStructural(TokenKind.KEYWORD_F32)
-            "f64" -> TokenStructural(TokenKind.KEYWORD_F64)
-            "str" -> TokenStructural(TokenKind.KEYWORD_STR)
+            "bool" -> TokenType(TokenKind.KEYWORD_BOOL)
+            "i8" -> TokenType(TokenKind.KEYWORD_I8)
+            "i16" -> TokenType(TokenKind.KEYWORD_I16)
+            "i32" -> TokenType(TokenKind.KEYWORD_I32)
+            "i64" -> TokenType(TokenKind.KEYWORD_I64)
+            "f32" -> TokenType(TokenKind.KEYWORD_F32)
+            "f64" -> TokenType(TokenKind.KEYWORD_F64)
+            "str" -> TokenType(TokenKind.KEYWORD_STR)
 
-            "true" -> TokenStructural(TokenKind.LITERAL_TRUE)
-            "false" -> TokenStructural(TokenKind.LITERAL_FALSE)
+            "true" -> TokenLiteral.TRUE
+            "false" -> TokenLiteral.FALSE
             else -> TokenIdentifier(text)
         }
     }

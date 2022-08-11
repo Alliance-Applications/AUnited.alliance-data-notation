@@ -108,6 +108,7 @@ internal class ParserTest {
 
         // test [[+1.0, -1.0], [.125, 0]]
         kotlin.run {
+            // Combination of I32 and F32 results in F64 per specification!
             val value00 = TokenLiteral(LITERAL_FLOAT, "+1.0")
             val value01 = TokenLiteral(LITERAL_FLOAT, "-1.0")
             val value10 = TokenLiteral(LITERAL_FLOAT, ".125")
@@ -115,6 +116,7 @@ internal class ParserTest {
 
             val parser = Parser(listOf(name, bracketO, bracketO, value00, comma, value01, bracketC, comma, bracketO, value10, comma, value11, bracketC, bracketC, eof))
             val result = parser.parse()["test"] as DataList
+
             Assertions.assertEquals(1.0, (result[0, 0] as Datapoint<*>).value)
             Assertions.assertEquals(-1.0, (result[0, 1] as Datapoint<*>).value)
             Assertions.assertEquals(.125, (result[1, 0] as Datapoint<*>).value)

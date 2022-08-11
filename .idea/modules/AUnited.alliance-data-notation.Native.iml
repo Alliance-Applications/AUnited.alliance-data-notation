@@ -3,7 +3,8 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$/../../Native">
-      <sourceFolder url="file://$MODULE_DIR$/../../Native/res" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../Native/rsc/main" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../Native/rsc/test" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/../../Native/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/../../Native/target" />
     </content>

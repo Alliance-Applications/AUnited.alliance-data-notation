@@ -1,9 +1,15 @@
 /**
-* JetBrains Space Automation
-* This Kotlin-script file lets you automate build activities
-* For more info, see https://www.jetbrains.com/help/space/automation.html
-*/
+ * JetBrains Space Automation
+ * This Kotlin-script file lets you automate build activities
+ * For more info, see https://www.jetbrains.com/help/space/automation.html
+ */
 
-job("Hello World!") {
-    container(displayName = "Say Hello", image = "hello-world")
+job("Build / Test / Publish") {
+    container(displayName = "Gradle", image = "openjdk:11") {
+        kotlinScript { api ->
+            api.gradlew("build")
+            api.gradlew("test")
+            api.gradlew("publish")
+        }
+    }
 }

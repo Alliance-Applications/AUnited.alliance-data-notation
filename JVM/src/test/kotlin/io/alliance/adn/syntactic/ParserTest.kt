@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class ParserTest {
+class ParserTest {
     private lateinit var struct: Token
     private lateinit var array: Token
 
@@ -120,7 +120,7 @@ internal class ParserTest {
             Assertions.assertEquals(1.0, (result[0, 0] as Datapoint<*>).value)
             Assertions.assertEquals(-1.0, (result[0, 1] as Datapoint<*>).value)
             Assertions.assertEquals(.125, (result[1, 0] as Datapoint<*>).value)
-            Assertions.assertEquals(0, (result[1, 1] as Datapoint<*>).value)
+            Assertions.assertEquals(0.0, (result[1, 1] as Datapoint<*>).value)
         }
 
         // test: i32[] [24, 24]
@@ -150,7 +150,7 @@ internal class ParserTest {
         }
 
         // struct test { test [24, 24] }
-        kotlin.run {
+        run {
             val parser = Parser(listOf(struct, name, braceO, name, bracketO, value, comma, value, bracketC, braceC, eof))
             val result = parser.parse()["test"] as DataStruct
             Assertions.assertEquals(24, ((result["test"] as DataList)[0] as Datapoint<*>).value)

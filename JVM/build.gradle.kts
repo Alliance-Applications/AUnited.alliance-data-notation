@@ -34,6 +34,10 @@ compileTestKotlin.kotlinOptions {
 }
 
 tasks {
+    withType<AbstractPublishToMaven> {
+        dependsOn("test")
+    }
+
     create<Delete>("clean-output") {
         group = "clean"
         delete(rootProject.buildDir)

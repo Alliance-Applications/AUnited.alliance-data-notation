@@ -8,4 +8,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AUnited.alliance-data-notation.JVM"
+rootProject.name = "AUnited.alliance-data-notation"
+include(":JVM")

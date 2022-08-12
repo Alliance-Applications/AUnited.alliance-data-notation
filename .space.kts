@@ -7,9 +7,7 @@
 job("Build / Test / Publish") {
     container(displayName = "Gradle", image = "openjdk:11") {
         kotlinScript { api ->
-            api.gradlew("build")
-            api.gradlew("test")
-            api.gradlew("publish")
+            api.gradlew("JVM:publish")
         }
     }
 }

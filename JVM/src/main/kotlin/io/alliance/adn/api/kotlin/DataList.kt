@@ -201,6 +201,10 @@ internal class DataList(name: String, private val type: DataType, val depth: Int
         values.removeAt(index)
     }
 
+    fun forEach(action: (Int, DataNode) -> Unit) {
+        values.forEachIndexed(action)
+    }
+
     companion object {
         internal fun anonymous(dataType: DataType, depth: Int): DataList {
             return DataList("_anonymous", dataType, depth)

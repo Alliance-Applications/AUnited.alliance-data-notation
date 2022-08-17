@@ -1,7 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val compileKotlin: KotlinCompile by tasks
-val compileTestKotlin: KotlinCompile by tasks
+val metaGroupId: String by extra { "io.alliance.toolset" }
+val metaArtifactId: String by extra { "adn-jvm" }
+val metaVersionName: String by extra { "1.0.1-FIXUP" }
+val metaVersionCode: Int by extra { 1 }
 
 plugins {
     // Languages
@@ -25,15 +27,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
-compileKotlin.kotlinOptions {
-    jvmTarget = "11"
-}
-
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "11"
-}
-
 tasks {
+    withType<KotlinCompile>().all {
+        kotlinOptions {
+            jvmTarget = "11"
+        }
+    }
+
     withType<AbstractPublishToMaven> {
         dependsOn("test")
     }
@@ -72,9 +72,9 @@ afterEvaluate {
 
         publications {
             create<MavenPublication>("maven") {
-                groupId = "io.alliance.toolset"
-                artifactId = "adn-jvm"
-                version = "1.0.0-SNAPSHOT"
+                groupId = metaGroupId
+                artifactId = metaArtifactId
+                version = metaVersionName
                 from(components["java"])
 
                 pom.name.set("Alliance data notation")

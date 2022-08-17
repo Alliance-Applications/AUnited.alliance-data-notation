@@ -2,7 +2,6 @@ package io.alliance.adn.api.kotlin
 
 import io.alliance.adn.api.InvalidReadException
 import io.alliance.adn.api.kotlin.DataType.*
-import kotlin.text.StringBuilder
 
 open class DataStruct(name: String) : DataNode(name) {
     protected val values: HashMap<String, DataNode> = HashMap()
@@ -116,5 +115,9 @@ open class DataStruct(name: String) : DataNode(name) {
 
             return result
         }
+    }
+
+    fun forEach(action: (String, DataNode) -> Unit) {
+        values.forEach(action)
     }
 }

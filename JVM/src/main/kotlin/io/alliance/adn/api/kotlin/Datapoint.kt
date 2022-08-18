@@ -4,7 +4,11 @@ import io.alliance.adn.semantic.TokenIdentifier
 import io.alliance.adn.semantic.TokenKind
 import io.alliance.adn.semantic.TokenLiteral
 
-internal class Datapoint<T>(name: String, val value: T, val type: DataType) : DataNode(name) {
+class Datapoint<T> internal constructor(
+    name: String,
+    @PublishedApi internal val value: T,
+    internal val type: DataType
+) : DataNode(name) {
 
     private val valueString get() = if (type == DataType.STR) "\"$value\"" else value.toString()
     private val typeString get() = ": ${type.keyword}"
@@ -39,14 +43,24 @@ internal class Datapoint<T>(name: String, val value: T, val type: DataType) : Da
             .append(';')
     }
 
-    internal fun <V> get(): V {
-        return (this as Datapoint<V>).value
-    }
-
     companion object {
         private const val ANONYMOUS = ""
 
-        fun <T> create(name: String, type: DataType, value: T): Datapoint<T> {
+        fun <T> create(name: String, value: T): Datapoint<T> {
+            return when (value) {
+                is Boolean -> Datapoint(name, value, DataType.BOOL)
+                is Byte -> Datapoint(name, value, DataType.I8)
+                is Short -> Datapoint(name, value, DataType.I16)
+                is Int -> Datapoint(name, value, DataType.I32)
+                is Long -> Datapoint(name, value, DataType.I64)
+                is Float -> Datapoint(name, value, DataType.F32)
+                is Double -> Datapoint(name, value, DataType.F64)
+                is String -> Datapoint(name, value, DataType.STR)
+                else -> throw RuntimeException("Only primitive types and Strings are allowed!")
+            }
+        }
+
+        internal fun <T> create(name: String, type: DataType, value: T): Datapoint<T> {
             return Datapoint(name, value, type)
         }
 
@@ -64,11 +78,11 @@ internal class Datapoint<T>(name: String, val value: T, val type: DataType) : Da
             }
         }
 
-        fun <T> anonymous(value: T, type: DataType): Datapoint<T> {
+        internal fun <T> anonymous(value: T, type: DataType): Datapoint<T> {
             return Datapoint(ANONYMOUS, value, type)
         }
 
-        fun anonymous(value: String, type: DataType): Datapoint<*> {
+        internal fun anonymous(value: String, type: DataType): Datapoint<*> {
             return when (type) {
                 DataType.NULL -> throw NullPointerException("Attempting to convert anonymous array value to null!")
                 DataType.BOOL -> Datapoint(ANONYMOUS, value.toBooleanStrict(), DataType.BOOL)

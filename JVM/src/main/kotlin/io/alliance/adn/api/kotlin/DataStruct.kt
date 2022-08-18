@@ -3,7 +3,7 @@ package io.alliance.adn.api.kotlin
 import io.alliance.adn.api.InvalidReadException
 import io.alliance.adn.api.kotlin.DataType.*
 
-open class DataStruct(name: String) : DataNode(name) {
+open class DataStruct internal constructor(name: String) : DataNode(name) {
     protected val values: HashMap<String, DataNode> = HashMap()
 
     override fun internalDataString(builder: StringBuilder): StringBuilder {
@@ -43,6 +43,10 @@ open class DataStruct(name: String) : DataNode(name) {
         return builder
             .append("\t".repeat(depth))
             .appendLine('}')
+    }
+
+    infix fun contains(name: String): Boolean {
+        return values.containsKey(name)
     }
 
     operator fun get(name: String): DataNode {

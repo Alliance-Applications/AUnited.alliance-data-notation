@@ -1,6 +1,6 @@
 package io.alliance.adn.api.kotlin
 
-internal class DataList(name: String, private val type: DataType, val depth: Int) : DataNode(name) {
+class DataList internal constructor(name: String, private val type: DataType, val depth: Int) : DataNode(name) {
     private val values: ArrayList<DataNode> = ArrayList()
 
     override fun internalDataString(builder: StringBuilder): StringBuilder {
@@ -87,7 +87,7 @@ internal class DataList(name: String, private val type: DataType, val depth: Int
             .append(']')
     }
 
-    internal operator fun get(vararg indices: Int): DataNode {
+    operator fun get(vararg indices: Int): DataNode {
         if (indices.size > 1) {
             var result: DataNode = this
 
@@ -101,19 +101,19 @@ internal class DataList(name: String, private val type: DataType, val depth: Int
         return values[indices[0]]
     }
 
-    internal operator fun set(index: Int, dataNode: DataNode) {
+    operator fun set(index: Int, dataNode: DataNode) {
         values[index] = dataNode
     }
 
-    internal fun size(): Int {
+    fun size(): Int {
         return values.size
     }
 
-    internal operator fun plusAssign(dataNode: DataNode) {
+    operator fun plusAssign(dataNode: DataNode) {
         values.add(dataNode)
     }
 
-    internal operator fun <T> plusAssign(value: T) {
+    operator fun <T> plusAssign(value: T) {
         if (this.depth > 0 && value is DataList && value.depth == this.depth - 1) {
             this.values.add(value)
             return
@@ -140,11 +140,11 @@ internal class DataList(name: String, private val type: DataType, val depth: Int
         }
     }
 
-    internal operator fun <T> plusAssign(values: Array<T>) {
+    operator fun <T> plusAssign(values: Array<T>) {
         this += values.asList()
     }
 
-    internal operator fun <T> plusAssign(values: List<T>) {
+    operator fun <T> plusAssign(values: List<T>) {
         if (values.isEmpty()) {
             return
         }
@@ -185,19 +185,19 @@ internal class DataList(name: String, private val type: DataType, val depth: Int
         }
     }
 
-    internal operator fun minusAssign(dataNode: DataNode) {
+    operator fun minusAssign(dataNode: DataNode) {
         values.remove(dataNode)
     }
 
-    internal operator fun minusAssign(dataNodes: Array<DataNode>) {
+    operator fun minusAssign(dataNodes: Array<DataNode>) {
         values.removeAll(dataNodes.toSet())
     }
 
-    internal operator fun minusAssign(dataNodes: List<DataNode>) {
+    operator fun minusAssign(dataNodes: List<DataNode>) {
         values.removeAll(dataNodes.toSet())
     }
 
-    internal operator fun minusAssign(index: Int) {
+    operator fun minusAssign(index: Int) {
         values.removeAt(index)
     }
 
@@ -206,6 +206,22 @@ internal class DataList(name: String, private val type: DataType, val depth: Int
     }
 
     companion object {
+        fun <T> create(name: String, vararg value: T): DataList {
+            return DataList(
+                name, when (value[0]) {
+                    is Boolean -> DataType.BOOL
+                    is Byte -> DataType.I8
+                    is Short -> DataType.I16
+                    is Int -> DataType.I32
+                    is Long -> DataType.I64
+                    is Float -> DataType.F32
+                    is Double -> DataType.F64
+                    is String -> DataType.STR
+                    else -> throw RuntimeException("Only primitive types and Strings are allowed!")
+                }, 0
+            )
+        }
+
         internal fun anonymous(dataType: DataType, depth: Int): DataList {
             return DataList("_anonymous", dataType, depth)
         }

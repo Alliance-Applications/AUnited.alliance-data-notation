@@ -9,6 +9,11 @@ internal class Lexer(input: List<Char>) : Walkable<Char>(input) {
         val result = ArrayList<Token>()
 
         while (index < size) {
+            if (current.isWhitespace()) {
+                consume
+                continue
+            }
+
             result.add(lexToken())
         }
 
@@ -17,10 +22,6 @@ internal class Lexer(input: List<Char>) : Walkable<Char>(input) {
     }
 
     private fun lexToken(): Token {
-        while (current.isWhitespace()) {
-            consume
-        }
-
         when (current) {
             '=' -> {
                 index++

@@ -10,7 +10,16 @@ class Datapoint<T> internal constructor(
     internal val type: DataType
 ) : DataNode(name) {
 
-    private val valueString get() = if (type == DataType.STR) "\"$value\"" else value.toString()
+    internal val valueString
+        get() = if (type == DataType.STR) {
+            val str = (value as String)
+                .replace("\t", "\\t")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+            "\"$str\""
+        } else value.toString()
     private val typeString get() = ": ${type.keyword}"
 
     override fun internalDataString(builder: StringBuilder): StringBuilder {

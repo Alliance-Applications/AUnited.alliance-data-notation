@@ -53,7 +53,7 @@ class DataList internal constructor(name: String, private val type: DataType, va
         } else {
             for (value in values) {
                 val node = value as Datapoint<*>
-                builder.append(node.value.toString()).append(',')
+                builder.append(node.valueString).append(',')
             }
         }
 
@@ -75,7 +75,7 @@ class DataList internal constructor(name: String, private val type: DataType, va
             for (value in values) {
                 val node = value as Datapoint<*>
                 builder
-                    .append(node.value.toString())
+                    .append(node.valueString)
                     .append(", ")
             }
         }

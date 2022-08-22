@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val metaGroupId: String by extra { "io.alliance.toolset" }
 val metaArtifactId: String by extra { "adn-jvm" }
-val metaVersionName: String by extra { "1.0.3-FIXUP" }
+val metaVersionName: String by extra { "1.0.4-FIXUP" }
 val metaVersionCode: Int by extra { 1 }
 
 plugins {
@@ -78,7 +78,7 @@ afterEvaluate {
                 from(components["java"])
 
                 pom.name.set("Alliance data notation")
-                pom.description.set("A description of my library")
+                pom.description.set("A strictly typed, JSON-like object notation. Syntax for type annotations inspired by Rust.")
             }
         }
     }

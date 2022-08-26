@@ -115,9 +115,9 @@ internal class Lexer(input: List<Char>) : Walkable<Char>(input) {
             if (current == '\\') {
                 when (next) {
                     '\\' -> builder.append('\\')
-                    '\t' -> builder.append('\t')
-                    '\r' -> builder.append('\r')
-                    '\n' -> builder.append('\n')
+                    't' -> builder.append('\t')
+                    'r' -> builder.append('\r')
+                    'n' -> builder.append('\n')
                     '"' -> builder.append('"')
                     else -> {
                         builder.append('\\')
@@ -161,6 +161,7 @@ internal class Lexer(input: List<Char>) : Walkable<Char>(input) {
 
             "true" -> TokenLiteral.TRUE
             "false" -> TokenLiteral.FALSE
+
             else -> TokenIdentifier(text)
         }
     }

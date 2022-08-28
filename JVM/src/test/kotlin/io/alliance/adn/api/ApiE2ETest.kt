@@ -1,6 +1,9 @@
 package io.alliance.adn.api
 
-import io.alliance.adn.api.kotlin.*
+import io.alliance.adn.api.kotlin.DataList
+import io.alliance.adn.api.kotlin.DataStruct
+import io.alliance.adn.api.kotlin.DataType
+import io.alliance.adn.api.kotlin.Dataset
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -14,10 +17,35 @@ internal class ApiE2ETest {
 
         dataset %= secondary
 
-        val tmp = writeDataset(dataset)
-        val readSet = readDataset(tmp)
+        val tmp = File.createTempFile("dataset", "adn")
+        dataset.write(tmp)
+
+        val readSet = Dataset.read(tmp)
 
         compareDataset(readSet)
+    }
+
+    private fun createPrimaryRoot(): Dataset {
+        val mat0 = DataList("Matrix", DataType.F32, 0)
+        mat0 += 0.5f
+        mat0 += -1.0f
+
+        val mat1 = DataList("Matrix", DataType.F32, 0)
+        mat1 += arrayOf(0.0f, -0.5f)
+
+        val matrix = DataList("Matrix", DataType.F32, 1)
+        matrix += listOf(mat0, mat1)
+
+        val list = DataList("List", DataType.I64, 0)
+        list += listOf(0, 1, 2, 3, 4)
+
+        val primary = DataStruct("Primary")
+        primary += matrix
+
+        val root = Dataset()
+        root += primary
+
+        return root
     }
 
     private fun createSecondaryRoot(): Dataset {
@@ -42,39 +70,6 @@ internal class ApiE2ETest {
         secondary -= "useless"
 
         return root
-    }
-
-
-    private fun createPrimaryRoot(): Dataset {
-        val mat0 = DataList("Matrix", DataType.F32, 0)
-        mat0 += 0.5f
-        mat0 += -1.0f
-
-        val mat1 = DataList("Matrix", DataType.F32, 0)
-        mat1 += arrayOf(0.0f, -0.5f)
-
-        val matrix = DataList("Matrix", DataType.F32, 1)
-        matrix += listOf(mat0, mat1)
-
-        val list = DataList("List", DataType.I64, 0)
-        list += listOf(0, 1, 2, 3, 4)
-
-        val primary = DataStruct("Primary")
-        primary += matrix
-
-        val root = Dataset()
-        root += primary
-
-        return root
-    }
-    private fun writeDataset(dataset: Dataset): File {
-        val file = File.createTempFile("dataset", "adn")
-        dataset.write(file)
-        return file
-    }
-
-    private fun readDataset(file: File): Dataset {
-        return Dataset.read(file)
     }
 
     private fun compareDataset(dataset: Dataset) {

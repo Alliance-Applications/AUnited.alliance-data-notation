@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Error, Read, Write};
+use std::io::{Error, ErrorKind, Read, Write};
 use std::ops::RemAssign;
 use std::path::Path;
 
@@ -29,6 +29,12 @@ impl SearchSet for Option<Dataset> {
             Some(ref mut set) => set.content.get_mut(name),
             _ => None
         }
+    }
+}
+
+impl Default for Dataset {
+    fn default() -> Self {
+        Dataset::new()
     }
 }
 
@@ -68,9 +74,12 @@ impl Dataset {
     }
 
     pub fn read_string(string: String) -> Result<Dataset, Error> {
-        let tokens = Lexer::new(string).lex_all();
-        let dataset = Parser::new(tokens).parse_all();
-        Ok(dataset)
+        match Parser::parse(Lexer::lex(string)) {
+            Err(error) => {
+                Err(Error::new(ErrorKind::InvalidInput, error))
+            }
+            Ok(ok) => Ok(ok)
+        }
     }
 
     pub fn write_file<P: AsRef<Path>>(&mut self, path: P) -> Result<(), Error> {
@@ -87,18 +96,18 @@ impl Dataset {
         let mut parts: Vec<String> = Vec::new();
         match self.format {
             NotationFormat::Data => {
-                for (name, data) in self.content {
+                for (name, data) in self.content.iter() {
                     data.internal_data_string(&mut parts, name);
                 }
             }
             NotationFormat::Formatted => {
-                for (name, data) in self.content {
-                    data.internal_format_string(&mut parts, name);
+                for (name, data) in self.content.iter() {
+                    data.internal_format_string(&mut parts, name, 0);
                 }
             }
             NotationFormat::Pretty => {
-                for (name, data) in self.content {
-                    data.internal_pretty_string(&mut parts, name);
+                for (name, data) in self.content.iter() {
+                    data.internal_pretty_string(&mut parts, name, 0);
                 }
             }
         }

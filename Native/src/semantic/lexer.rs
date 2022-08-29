@@ -1,7 +1,7 @@
 use std::cell::Cell;
 
 use crate::semantic::TokenKind;
-use crate::semantic::TokenKind::{Identifier, KeywordBool, KeywordF32, KeywordF64, KeywordI16, KeywordI32, KeywordI64, KeywordI8, KeywordStr, KeywordStruct, LiteralBoolean, LiteralFloat, LiteralNumber, LiteralString, MiscBadToken, TokenBraceClose, TokenBraceOpen, TokenBracketClose, TokenBracketOpen, TokenColon, TokenComma, TokenSemicolon, TokenSet};
+use crate::semantic::TokenKind::{Identifier, KeywordArray, KeywordBool, KeywordF32, KeywordF64, KeywordI16, KeywordI32, KeywordI64, KeywordI8, KeywordStr, KeywordStruct, LiteralBoolean, LiteralFloat, LiteralNumber, LiteralString, MiscBadToken, MiscEndOfFile, TokenBraceClose, TokenBraceOpen, TokenBracketClose, TokenBracketOpen, TokenColon, TokenComma, TokenSemicolon, TokenSet};
 use crate::Walkable;
 
 pub(crate) struct Lexer {
@@ -10,34 +10,41 @@ pub(crate) struct Lexer {
 }
 
 impl Lexer {
-    pub(crate) fn new(file: String) -> Lexer {
-        Lexer {
-            list: file.chars().collect(),
+    pub(crate) fn lex(input: String) -> Vec<TokenKind> {
+        let lexer = Lexer {
+            list: input.chars().collect(),
             index: Cell::new(0),
-        }
-    }
+        };
 
-    pub(crate) fn lex_all(&self) -> Vec<TokenKind> {
         let mut tokens: Vec<TokenKind> = Vec::new();
-        let max_index = self.list.len();
+        let max_index = lexer.list.len();
 
-        while self.index.get() < max_index {
-            tokens.push(match self.consume() {
+        while lexer.index.get() < max_index {
+            tokens.push(match lexer.consume() {
                 '{' => TokenBraceOpen,
-                '[' => TokenBracketOpen,
+                '[' => {
+                    if lexer.current() == &']' {
+                        lexer.skip();
+                        KeywordArray
+                    } else {
+                        TokenBracketOpen
+                    }
+                },
                 ']' => TokenBracketClose,
                 '}' => TokenBraceClose,
                 '=' => TokenSet,
                 ',' => TokenComma,
                 ';' => TokenSemicolon,
                 ':' => TokenColon,
-                '.' => self.lex_numeric(true, false),
-                '+' => self.lex_numeric(false, false),
-                '-' => self.lex_numeric(false, true),
-                '"' => self.lex_string(),
-                first => self.lex_textual(*first)
+                '.' => lexer.lex_numeric(true, false),
+                '+' => lexer.lex_numeric(false, false),
+                '-' => lexer.lex_numeric(false, true),
+                '"' => lexer.lex_string(),
+                first => lexer.lex_textual(*first)
             })
         }
+
+        tokens.push(MiscEndOfFile);
 
         tokens
     }

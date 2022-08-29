@@ -16,17 +16,225 @@ pub enum Datapoint {
 }
 
 impl Datapoint {
-    pub(crate) fn internal_data_string(&self, p0: &mut Vec<String>, p1: String) {
-        todo!()
+    pub(crate) fn internal_data_string(&self, out: &mut Vec<String>, name: &String) {
+        out.push(match self {
+            // Implicit
+            Bool(value) => format!("{} {} ", name, value),
+            I32(value) => format!("{} {} ", name, value),
+            F32(value) => {
+                if value.ceil().eq(value) {
+                    format!("{} {}.0 ", name, value)
+                } else {
+                    format!("{} {} ", name, value)
+                }
+            }
+            Str(value) => {
+                let v = value.replace("\t", "\\t")
+                    .replace("\r", "\\r")
+                    .replace("\n", "\\n")
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"");
+                format!("{} \"{}\"", name, v)
+            }
+
+            // Explicit
+            I8(value) => format!("{}:i8 {} ", name, value),
+            I16(value) => format!("{}:i16 {} ", name, value),
+            I64(value) => format!("{}:i64 {} ", name, value),
+            F64(value) => format!("{}:f64 {} ", name, value),
+
+            // Complex
+            Array(value) => {}
+            Struct(value) => {
+                out.push(format!("{}{{", name));
+                for (name, data) in value {
+                    data.internal_data_string(out, name);
+                }
+                "}".to_string()
+            }
+        });
     }
 
-    pub(crate) fn internal_format_string(&self, p0: &mut Vec<String>, p1: String) {
-        todo!()
+    pub(crate) fn internal_format_string(&self, out: &mut Vec<String>, name: &String, depth: i32) {
+        for _ in 0..depth {
+            out.push("\t".to_string())
+        }
+
+        out.push(match self {
+            // Implicit
+            Bool(value) => format!("{} {}", name, value),
+            I32(value) => format!("{} {}", name, value),
+            F32(value) => {
+                if value.ceil().eq(value) {
+                    format!("{} {}.0", name, value)
+                } else {
+                    format!("{} {}", name, value)
+                }
+            }
+            Str(value) => {
+                let v = value.replace("\t", "\\t")
+                    .replace("\r", "\\r")
+                    .replace("\n", "\\n")
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"");
+                format!("{} \"{}\"", name, v)
+            }
+
+            // Explicit
+            I8(value) => format!("{}:i8 {}", name, value),
+            I16(value) => format!("{}:i16 {}", name, value),
+            I64(value) => format!("{}:i64 {}", name, value),
+            F64(value) =>
+                if value.ceil().eq(value) {
+                    format!("{}:f64 {}.0", name, value)
+                } else {
+                    format!("{}:f64 {}", name, value)
+                }
+
+            // Complex
+            Array(value) => {}
+            Struct(value) => {
+                out.push(format!("{} {{", name));
+                for (name, data) in value {
+                    data.internal_format_string(out, name, depth + 1);
+                }
+                "}".to_string()
+            }
+        });
+
+        out.push("\n".to_string())
     }
 
 
-    pub(crate) fn internal_pretty_string(&self, p0: &mut Vec<String>, p1: String) {
-        todo!()
+    pub(crate) fn internal_pretty_string(&self, out: &mut Vec<String>, name: &String, depth: i32) {
+        for _ in 0..depth {
+            out.push("\t".to_string())
+        }
+
+        out.push(match self {
+            Bool(value) => format!("{}: bool = {};", name, value),
+            I8(value) => format!("{}: i8 = {};", name, value),
+            I16(value) => format!("{}: i16 = {};", name, value),
+            I32(value) => format!("{}: i32 = {};", name, value),
+            I64(value) => format!("{}: i64 = {};", name, value),
+            F32(value) => format!("{}: f32 = {};", name, value),
+            F64(value) => format!("{}: f64 = {};", name, value),
+            Str(value) => format!("{}: str = \"{}\";", name, value
+                .replace("\t", "\\t")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")),
+
+            // Complex
+            Array(value) => {}
+            Struct(value) => {
+                out.push(format!("struct {} {{", name));
+                for (name, data) in value {
+                    data.internal_pretty_string(out, name, depth + 1);
+                }
+                "}".to_string()
+            }
+        });
+
+        out.push("\n".to_string())
+    }
+
+    fn stringify_array_content_data(&self, out: &mut Vec<String>) {
+        out.push("[".to_string());
+
+        out.push(match self {
+            // Implicit
+            Bool(value) => format!("{},", value),
+            I8(value) => format!("{},", value),
+            I16(value) => format!("{},", value),
+            I32(value) => format!("{},", value),
+            I64(value) => format!("{},", value),
+            F64(value) => format!("{},", value),
+            F32(value) => {
+                if value.ceil().eq(value) {
+                    format!("{}.0,", value)
+                } else {
+                    format!("{},", value)
+                }
+            }
+            Str(value) => format!("\"{}\",", value
+                .replace("\t", "\\t")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")),
+
+            // Complex
+            Array(values) => {
+                for value in values {
+                    value.stringify_array_content_data(out);
+                    out.push(",".to_string());
+                }
+                "".to_string()
+            }
+            Struct(_) => panic!("Structs in arrays are not permitted!"),
+        });
+
+        if let Some(v) = out.pop() {
+            unsafe {
+                out.push(v.get_unchecked(0..v.len() - 1).to_string());
+                out.push("]".to_string());
+            }
+        }
+    }
+
+    fn stringify_array_content_format(&self, out: &mut Vec<String>, depth: i32) {
+        for _ in 0..depth {
+            out.push("\t".to_string())
+        }
+
+        out.push("[\n".to_string());
+
+        out.push(match self {
+            // Implicit
+            Bool(value) => format!("{}, ", value),
+            I8(value) => format!("{}, ", value),
+            I16(value) => format!("{}, ", value),
+            I32(value) => format!("{}, ", value),
+            I64(value) => format!("{}, ", value),
+            F64(value) => format!("{}, ", value),
+            F32(value) => {
+                if value.ceil().eq(value) {
+                    format!("{}.0, ", value)
+                } else {
+                    format!("{}, ", value)
+                }
+            }
+            Str(value) => format!("\"{}\", ", value
+                .replace("\t", "\\t")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")),
+
+            // Complex
+            Array(values) => {
+                for value in values {
+                    value.stringify_array_content_format(out, depth + 1);
+                    out.push(", ".to_string());
+                }
+                "".to_string()
+            }
+            Struct(_) => panic!("Structs in arrays are not permitted!"),
+        });
+
+        if let Some(v) = out.pop() {
+            unsafe {
+                out.push(v.get_unchecked(0..v.len() - 2).to_string());
+
+                for _ in 0..depth - 1 {
+                    out.push("\t".to_string())
+                }
+
+                out.push("]".to_string());
+            }
+        }
     }
 }
 

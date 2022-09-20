@@ -82,7 +82,7 @@ impl Parser {
 
             return match depth {
                 0 => Ok((identifier, self.parse_literal(Some(_type))?)),
-                _ => Ok((identifier, self.parse_array(Some(_type), depth)?))
+                _ => Ok((identifier, self.parse_array(Some(_type), depth as i32)?))
             }
         }
 
@@ -97,7 +97,7 @@ impl Parser {
 
         return match depth {
             0 => Ok((identifier, self.parse_literal(None)?)),
-            _ => Ok((identifier, self.parse_array(None, depth)?))
+            _ => Ok((identifier, self.parse_array(None, depth as i32)?))
         }
     }
 
@@ -114,8 +114,14 @@ impl Parser {
         Ok(Datapoint::Struct(map))
     }
 
-    fn parse_array(&self, expected_type: Option<&TokenKind>, depth: usize) -> Result<Datapoint, Error> {
-        todo!()
+    fn parse_array(&self, expected_type: Option<&TokenKind>, depth: i32) -> Result<Datapoint, Error> {
+        let (actual_type, elements): (&TokenKind, _) = self.parse_array_elements();
+
+        if let Some(expected) = actual_type.castable_from(expected_type) {
+            self.map_array(elements, expected, -(1 - depth), 0)
+        } else {
+            Err(Error::default())
+        }
     }
 
     fn parse_literal(&self, expected_type: Option<&TokenKind>) -> Result<Datapoint, Error> {

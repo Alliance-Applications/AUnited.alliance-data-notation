@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use Datapoint::*;
 
+use crate::data::datatype::{DataType, Datatype};
+
 pub enum Datapoint {
     Bool(bool),
     I8(i8),
@@ -11,48 +13,56 @@ pub enum Datapoint {
     F32(f32),
     F64(f64),
     Str(String),
-    Array(Vec<Datapoint>),
+    Array(Box<DataType>, Vec<Datapoint>),
     Struct(HashMap<String, Datapoint>),
 }
 
 impl Datapoint {
     pub(crate) fn internal_data_string(&self, out: &mut Vec<String>, name: &String) {
-        out.push(match self {
+        match self {
             // Implicit
-            Bool(value) => format!("{} {} ", name, value),
-            I32(value) => format!("{} {} ", name, value),
-            F32(value) => {
-                if value.ceil().eq(value) {
-                    format!("{} {}.0 ", name, value)
-                } else {
-                    format!("{} {} ", name, value)
-                }
+            Bool(value) => out.push(format!("{} {} ", name, value)),
+            I32(value) => out.push(format!("{} {} ", name, value)),
+            F32(value) => if value.ceil().eq(value) {
+                out.push(format!("{} {}.0 ", name, value));
+            } else {
+                out.push(format!("{} {} ", name, value));
             }
-            Str(value) => {
-                let v = value.replace("\t", "\\t")
-                    .replace("\r", "\\r")
-                    .replace("\n", "\\n")
-                    .replace("\\", "\\\\")
-                    .replace("\"", "\\\"");
-                format!("{} \"{}\"", name, v)
-            }
+            Str(value) => out.push(format!("{} \"{}\"", name, value
+                .replace('\t', "\\t")
+                .replace('\r', "\\r")
+                .replace('\n', "\\n")
+                .replace('\\', "\\\\")
+                .replace('\"', "\\\""))),
 
             // Explicit
-            I8(value) => format!("{}:i8 {} ", name, value),
-            I16(value) => format!("{}:i16 {} ", name, value),
-            I64(value) => format!("{}:i64 {} ", name, value),
-            F64(value) => format!("{}:f64 {} ", name, value),
+            I8(value) => out.push(format!("{}:i8 {} ", name, value)),
+            I16(value) => out.push(format!("{}:i16 {} ", name, value)),
+            I64(value) => out.push(format!("{}:i64 {} ", name, value)),
+            F64(value) => out.push(format!("{}:f64 {} ", name, value)),
 
             // Complex
-            Array(value) => {}
+            Array(datatype, _) => {
+                let (text, implicit) = datatype.get_keyword();
+
+                if implicit {
+                    out.push(name.to_string());
+                } else {
+                    out.push(format!("{}:{}", name, text));
+                };
+
+                self.stringify_array_content_data(out);
+            }
             Struct(value) => {
                 out.push(format!("{}{{", name));
+
                 for (name, data) in value {
                     data.internal_data_string(out, name);
                 }
-                "}".to_string()
+
+                out.push("}".to_string());
             }
-        });
+        };
     }
 
     pub(crate) fn internal_format_string(&self, out: &mut Vec<String>, name: &String, depth: i32) {
@@ -60,47 +70,54 @@ impl Datapoint {
             out.push("\t".to_string())
         }
 
-        out.push(match self {
+        match self {
             // Implicit
-            Bool(value) => format!("{} {}", name, value),
-            I32(value) => format!("{} {}", name, value),
-            F32(value) => {
-                if value.ceil().eq(value) {
-                    format!("{} {}.0", name, value)
-                } else {
-                    format!("{} {}", name, value)
-                }
-            }
-            Str(value) => {
-                let v = value.replace("\t", "\\t")
-                    .replace("\r", "\\r")
-                    .replace("\n", "\\n")
-                    .replace("\\", "\\\\")
-                    .replace("\"", "\\\"");
-                format!("{} \"{}\"", name, v)
-            }
+            Bool(value) => out.push(format!("{} {}", name, value)),
+            I32(value) => out.push(format!("{} {}", name, value)),
+            F32(value) => if value.ceil().eq(value) {
+                out.push(format!("{} {}.0", name, value));
+            } else {
+                out.push(format!("{} {}", name, value));
+            },
+            Str(value) => out.push(format!("{} \"{}\"", name, value
+                .replace('\t', "\\t")
+                .replace('\r', "\\r")
+                .replace('\n', "\\n")
+                .replace('\\', "\\\\")
+                .replace('\"', "\\\""))),
 
             // Explicit
-            I8(value) => format!("{}:i8 {}", name, value),
-            I16(value) => format!("{}:i16 {}", name, value),
-            I64(value) => format!("{}:i64 {}", name, value),
-            F64(value) =>
-                if value.ceil().eq(value) {
-                    format!("{}:f64 {}.0", name, value)
-                } else {
-                    format!("{}:f64 {}", name, value)
-                }
+            I8(value) => out.push(format!("{}:i8 {}", name, value)),
+            I16(value) => out.push(format!("{}:i16 {}", name, value)),
+            I64(value) => out.push(format!("{}:i64 {}", name, value)),
+            F64(value) => if value.ceil().eq(value) {
+                out.push(format!("{}:f64 {}.0", name, value));
+            } else {
+                out.push(format!("{}:f64 {}", name, value));
+            }
 
             // Complex
-            Array(value) => {}
+            Array(datatype, _) => {
+                let (text, implicit) = datatype.get_keyword();
+
+                if implicit {
+                    out.push(format!("{} ", name));
+                } else {
+                    out.push(format!("{}: {} ", name, text));
+                };
+
+                self.stringify_array_content_format(out, depth + 1);
+            }
             Struct(value) => {
                 out.push(format!("{} {{", name));
+
                 for (name, data) in value {
                     data.internal_format_string(out, name, depth + 1);
                 }
-                "}".to_string()
+
+                out.push("}".to_string());
             }
-        });
+        };
 
         out.push("\n".to_string())
     }
@@ -111,137 +128,155 @@ impl Datapoint {
             out.push("\t".to_string())
         }
 
-        out.push(match self {
-            Bool(value) => format!("{}: bool = {};", name, value),
-            I8(value) => format!("{}: i8 = {};", name, value),
-            I16(value) => format!("{}: i16 = {};", name, value),
-            I32(value) => format!("{}: i32 = {};", name, value),
-            I64(value) => format!("{}: i64 = {};", name, value),
-            F32(value) => format!("{}: f32 = {};", name, value),
-            F64(value) => format!("{}: f64 = {};", name, value),
-            Str(value) => format!("{}: str = \"{}\";", name, value
-                .replace("\t", "\\t")
-                .replace("\r", "\\r")
-                .replace("\n", "\\n")
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")),
+        match self {
+            Bool(value) => out.push(format!("{}: bool = {};", name, value)),
+            I8(value) => out.push(format!("{}: i8 = {};", name, value)),
+            I16(value) => out.push(format!("{}: i16 = {};", name, value)),
+            I32(value) => out.push(format!("{}: i32 = {};", name, value)),
+            I64(value) => out.push(format!("{}: i64 = {};", name, value)),
+            F32(value) => out.push(format!("{}: f32 = {};", name, value)),
+            F64(value) => out.push(format!("{}: f64 = {};", name, value)),
+            Str(value) => out.push(format!("{}: str = \"{}\";", name, value
+                .replace('\t', "\\t")
+                .replace('\r', "\\r")
+                .replace('\n', "\\n")
+                .replace('\\', "\\\\")
+                .replace('\"', "\\\""))),
 
             // Complex
-            Array(value) => {}
+            Array(datatype, _) => {
+                out.push(format!("{}: {} ", name, datatype.get_keyword().0));
+                self.stringify_array_content_format(out, depth + 1);
+            }
             Struct(value) => {
                 out.push(format!("struct {} {{", name));
+
                 for (name, data) in value {
                     data.internal_pretty_string(out, name, depth + 1);
                 }
-                "}".to_string()
+
+                out.push("}".to_string());
             }
-        });
+        };
 
         out.push("\n".to_string())
     }
 
-    fn stringify_array_content_data(&self, out: &mut Vec<String>) {
-        out.push("[".to_string());
+    fn get_keyword(&self) -> (&str, bool) {
+        return match self {
+            Bool(_) => ("bool", true),
+            I8(_) => ("i8", false),
+            I16(_) => ("i16", false),
+            I32(_) => ("i32", true),
+            I64(_) => ("i64", false),
+            F32(_) => ("f32", true),
+            F64(_) => ("f64", false),
+            Str(_) => ("str", true),
+            Array(n, _) => n.get_keyword(),
+            Struct(_) => ("struct", false),
+        }
+    }
 
-        out.push(match self {
+    fn stringify_array_content_data(&self, out: &mut Vec<String>) {
+        match self {
             // Implicit
-            Bool(value) => format!("{},", value),
-            I8(value) => format!("{},", value),
-            I16(value) => format!("{},", value),
-            I32(value) => format!("{},", value),
-            I64(value) => format!("{},", value),
-            F64(value) => format!("{},", value),
-            F32(value) => {
-                if value.ceil().eq(value) {
-                    format!("{}.0,", value)
-                } else {
-                    format!("{},", value)
-                }
-            }
-            Str(value) => format!("\"{}\",", value
-                .replace("\t", "\\t")
-                .replace("\r", "\\r")
-                .replace("\n", "\\n")
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")),
+            Bool(value) => out.push(format!("{}", value)),
+            I8(value) => out.push(format!("{}", value)),
+            I16(value) => out.push(format!("{}", value)),
+            I32(value) => out.push(format!("{}", value)),
+            I64(value) => out.push(format!("{}", value)),
+            F64(value) => out.push(format!("{}", value)),
+
+            F32(value) => if value.ceil().eq(value) {
+                out.push(format!("{}.0", value));
+            } else {
+                out.push(format!("{}", value));
+            },
+            Str(value) => out.push(format!("\"{}\"", value
+                .replace('\t', "\\t")
+                .replace('\r', "\\r")
+                .replace('\n', "\\n")
+                .replace('\\', "\\\\")
+                .replace('\"', "\\\""))),
 
             // Complex
-            Array(values) => {
+            Array(_, values) => {
+                out.push("[".to_string());
+
                 for value in values {
                     value.stringify_array_content_data(out);
                     out.push(",".to_string());
                 }
-                "".to_string()
-            }
-            Struct(_) => panic!("Structs in arrays are not permitted!"),
-        });
 
-        if let Some(v) = out.pop() {
-            unsafe {
-                out.push(v.get_unchecked(0..v.len() - 1).to_string());
-                out.push("]".to_string());
+                if let Some(v) = out.pop() {
+                    unsafe {
+                        out.push(v.get_unchecked(0..v.len() - 1).to_string());
+                        out.push("]".to_string());
+                    }
+                }
             }
-        }
+
+            Struct(_) => panic!("Structs in arrays are not permitted!"),
+        };
     }
 
     fn stringify_array_content_format(&self, out: &mut Vec<String>, depth: i32) {
-        for _ in 0..depth {
-            out.push("\t".to_string())
-        }
-
-        out.push("[\n".to_string());
-
-        out.push(match self {
+        match self {
             // Implicit
-            Bool(value) => format!("{}, ", value),
-            I8(value) => format!("{}, ", value),
-            I16(value) => format!("{}, ", value),
-            I32(value) => format!("{}, ", value),
-            I64(value) => format!("{}, ", value),
-            F64(value) => format!("{}, ", value),
+            Bool(value) => out.push(format!("{}, ", value)),
+            I8(value) => out.push(format!("{}, ", value)),
+            I16(value) => out.push(format!("{}, ", value)),
+            I32(value) => out.push(format!("{}, ", value)),
+            I64(value) => out.push(format!("{}, ", value)),
+            F64(value) => out.push(format!("{}, ", value)),
             F32(value) => {
                 if value.ceil().eq(value) {
-                    format!("{}.0, ", value)
+                    out.push(format!("{}.0, ", value));
                 } else {
-                    format!("{}, ", value)
+                    out.push(format!("{}, ", value));
                 }
             }
-            Str(value) => format!("\"{}\", ", value
-                .replace("\t", "\\t")
-                .replace("\r", "\\r")
-                .replace("\n", "\\n")
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")),
+            Str(value) => out.push(format!("\"{}\", ", value
+                .replace('\t', "\\t")
+                .replace('\r', "\\r")
+                .replace('\n', "\\n")
+                .replace('\\', "\\\\")
+                .replace('\"', "\\\""))),
 
             // Complex
-            Array(values) => {
+            Array(_, values) => {
+                for _ in 0..depth {
+                    out.push("\t".to_string())
+                }
+
+                out.push("[\n".to_string());
+
                 for value in values {
                     value.stringify_array_content_format(out, depth + 1);
                     out.push(", ".to_string());
                 }
-                "".to_string()
-            }
-            Struct(_) => panic!("Structs in arrays are not permitted!"),
-        });
 
-        if let Some(v) = out.pop() {
-            unsafe {
-                out.push(v.get_unchecked(0..v.len() - 2).to_string());
+                if let Some(v) = out.pop() {
+                    unsafe {
+                        out.push(v.get_unchecked(0..v.len() - 2).to_string());
 
-                for _ in 0..depth - 1 {
-                    out.push("\t".to_string())
+                        for _ in 0..depth - 1 {
+                            out.push("\t".to_string())
+                        }
+
+                        out.push("]".to_string());
+                    }
                 }
-
-                out.push("]".to_string());
-            }
-        }
+            },
+            Struct(_) => panic!("Structs in arrays are not permitted!"),
+        };
     }
 }
 
 impl Datapoint {
     pub fn add_to_array(&mut self, data: Datapoint) -> &mut Datapoint {
         match self {
-            Array(ref mut vec) => vec.push(data),
+            Array(_, ref mut vec) => vec.push(data),
             _ => eprintln!("Attempt to put datapoint in non-array datapoint!")
         }
 
@@ -250,7 +285,7 @@ impl Datapoint {
 
     pub fn remove_from_array(&mut self, index: usize) -> &mut Datapoint {
         match self {
-            Array(ref mut vec) => { vec.remove(index); }
+            Array(_, ref mut vec) => { vec.remove(index); }
             _ => eprintln!("Attempt to remove datapoint from non-array datapoint!")
         }
 
@@ -281,15 +316,15 @@ pub trait Index {
 }
 
 pub trait Find {
-    fn find(&mut self, name: &String) -> Option<&mut Datapoint>;
+    fn find(&mut self, name: &str) -> Option<&mut Datapoint>;
 }
 
 impl Index for Datapoint {
     fn index(&mut self, index: usize) -> Option<&mut Datapoint> {
-        return match self {
-            Array(data) => Some(&mut data[index]),
+        match self {
+            Array(_, data) => Some(&mut data[index]),
             _ => None
-        };
+        }
     }
 }
 
@@ -297,7 +332,7 @@ impl Index for Option<&mut Datapoint> {
     fn index(&mut self, index: usize) -> Option<&mut Datapoint> {
         if let Some(array) = self {
             return match array {
-                Array(data) => Some(&mut data[index]),
+                Array(_, data) => Some(&mut data[index]),
                 _ => None
             };
         }
@@ -306,7 +341,7 @@ impl Index for Option<&mut Datapoint> {
 }
 
 impl Find for Datapoint {
-    fn find(&mut self, name: &String) -> Option<&mut Datapoint> {
+    fn find(&mut self, name: &str) -> Option<&mut Datapoint> {
         return match self {
             Struct(data) => data.get_mut(name),
             _ => None
@@ -315,7 +350,7 @@ impl Find for Datapoint {
 }
 
 impl Find for Option<&mut Datapoint> {
-    fn find(&mut self, name: &String) -> Option<&mut Datapoint> {
+    fn find(&mut self, name: &str) -> Option<&mut Datapoint> {
         if let Some(struc) = self {
             return match struc {
                 Struct(data) => data.get_mut(name),
@@ -324,4 +359,23 @@ impl Find for Option<&mut Datapoint> {
         }
         None
     }
+}
+
+type DataPoint<T: Datapointn> = T;
+
+union Datatypes {
+    bool: bool,
+    i8: i8,
+    bool: bool,
+    bool: bool,
+    bool: bool,
+    bool: bool,
+    bool: bool,
+    bool: bool,
+    bool: bool,
+    bool: bool,
+}
+
+pub trait Datapointn<T: Datatype = Self>: Datatype<T> {
+    fn cast(&self, target: DataType) -> Option<DataPoint<Self>>;
 }

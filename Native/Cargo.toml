@@ -1,6 +1,6 @@
 [package]
 name = "alliance-data-notation"
-description = "A statically typed, JSON like data notation"
+description = "A strongly, statically typed, JSON like data notation. Provides type inferration for most common types for convenience."
 repository = ""
 version = "0.0.1-alpha"
 authors = ["Raphael Mateus das Neves <NER.Alliance@gmail.com>"]

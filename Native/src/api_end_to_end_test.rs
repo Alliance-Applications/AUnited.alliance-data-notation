@@ -22,11 +22,11 @@ mod test {
     }
 
     fn create_primary_root() -> Dataset {
-        let mat0 = Array(vec!(F32(0.5), F32(-1.0)));
-        let mat1 = Array(vec!(F32(0.0), F32(-0.5)));
-        let mat = Array(vec!(mat0, mat1));
+        let mat0 = Array(Box::new(F32(0.0)), vec!(F32(0.5), F32(-1.0)));
+        let mat1 = Array(Box::new(F32(0.0)), vec!(F32(0.0), F32(-0.5)));
+        let mat = Array(Box::new(F32(0.0)), vec!(mat0, mat1));
 
-        let list = Array(vec!(I64(0), I64(1), I64(2), I64(3), I64(4)));
+        let list = Array(Box::new(I64(0)), vec!(I64(0), I64(1), I64(2), I64(3), I64(4)));
 
         let mut datastruct: Datapoint = Struct(HashMap::new());
 

@@ -8,6 +8,7 @@ pub mod data {
     pub use notation_format::*;
 
     mod datapoint;
+    mod datatype;
     mod dataset;
     mod notation_format;
 }
